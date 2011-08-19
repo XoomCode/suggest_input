@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:SuggestInputCB xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:search = "com.inciti.view.components.search.*" xmlns:components="com.xoomcode.components.*">
+	
+</components:SuggestInputCB>
