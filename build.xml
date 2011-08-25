@@ -4,7 +4,7 @@
   <property name="FLEX_HOME" value="${env.FLEX_HOME}"/>
   <property name="src.dir" value="src"/>
   <property name="release.dir" value="bin"/>
-  <property name="library.file" value="SuggestInput.swc"/>
+  <property name="library.file" value="suggest-input.swc"/>
  
   <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" /> 
  
