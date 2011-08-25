@@ -21,7 +21,6 @@ package com.xoomcode.components
 	
 	public class SuggestList extends List
 	{
-		private var _position:Point;
 		private var _suggestInput:TextInput;
 		
 		public var isOpen:Boolean;
@@ -34,7 +33,6 @@ package com.xoomcode.components
 			doubleClickEnabled = true;
 			
 			_suggestInput = suggestInput;
-			_position = _suggestInput.localToGlobal(new Point(_suggestInput.x, _suggestInput.y + _suggestInput.height + 3));
 			this.width = _suggestInput.width;
 		}
 		
@@ -48,9 +46,10 @@ package com.xoomcode.components
 			this.addEventListener(ListEvent.ITEM_DOUBLE_CLICK, onItemDoubleClick);
 			this.addEventListener(FlexMouseEvent.MOUSE_DOWN_OUTSIDE, onListMouseDownOutside);
 			
+			var position:Point = _suggestInput.localToGlobal(new Point(_suggestInput.x, _suggestInput.y + _suggestInput.height + 3));
 			PopUpManager.addPopUp(this, _suggestInput);
 			PopUpManager.centerPopUp(this);
-			this.move(_position.x, _position.y);
+			this.move(position.x, position.y);
 		}
 		
 		public function close():void
