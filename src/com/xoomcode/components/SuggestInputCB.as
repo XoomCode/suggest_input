@@ -1,7 +1,7 @@
 package com.xoomcode.components
 {
 	import com.xoomcode.components.SuggestList;
-	import com.xoomcode.events.SuggestListEvent;
+	import com.xoomcode.events.SuggestInputEvent;
 	
 	import flash.events.Event;
 	import flash.events.FocusEvent;
@@ -11,20 +11,27 @@ package com.xoomcode.components
 	import flash.ui.Keyboard;
 	import flash.utils.Timer;
 	
+	import mx.controls.Alert;
 	import mx.controls.TextInput;
 	import mx.events.FlexEvent;
 	import mx.events.FlexMouseEvent;
 	import mx.managers.PopUpManager;
+	import mx.rpc.events.ResultEvent;
+	import mx.rpc.http.HTTPService;
+	
+	[Event(name="searchChange", type="SuggestInputEvent")]
 	
 	public class SuggestInputCB extends TextInput
 	{
 		private const MIN_CHARS:int = 3;
-		private const SEARCH_DELAY:int = 200;
+		private const SEARCH_DELAY:int = 500;
 		
 		private var _suggestList:SuggestList;
 		private var _view:SuggestInput = null;
-		private var _timer:Timer;		
-		private var _searchService:SearchService;
+		private var _timer:Timer;
+		
+		public var service:HTTPService;
+		public var params:Object;
 		
 		public function SuggestInputCB()
 		{
@@ -51,16 +58,15 @@ package com.xoomcode.components
 		protected function setup(e:FlexEvent):void
 		{
 			_view = new SuggestInput();
-			_searchService = new SearchService();
 			
 			this.addEventListener(KeyboardEvent.KEY_UP, onTextKeyUp, false, -100, true);
 			
 			_timer = new Timer(SEARCH_DELAY, 1);
 			_timer.addEventListener(TimerEvent.TIMER_COMPLETE, onTimerComplete);
 			
-			_suggestList = new SuggestList();
-			_suggestList.width = this.width;
-			_suggestList.addEventListener(SuggestListEvent.ITEM_SELECTED, onItemSelected);
+			_suggestList = new SuggestList(this);
+			_suggestList.addEventListener(SuggestInputEvent.LIST_CLOSE, onSuggestListClose);
+			_suggestList.addEventListener(SuggestInputEvent.SEARCH_CHANGE, onSuggesListSearchChange);
 		}
 		
 		private function onTextKeyUp(event:KeyboardEvent):void {
@@ -70,12 +76,14 @@ package com.xoomcode.components
 					focusManager.setFocus(_suggestList);
 				
 			} else if (event.keyCode == Keyboard.ESCAPE) {
-				_suggestList.close();
-				focusManager.setFocus(this);
-				
+				_suggestList.close();				
 			} else if (event.keyCode == Keyboard.ENTER) {
-				if (this.text.length >= MIN_CHARS)
-					_searchService.lucky_search(this.text, onSearchCallback);
+				if (this.text.length >= 1) {
+					var suggestEvent:SuggestInputEvent = new SuggestInputEvent(SuggestInputEvent.SEARCH_CHANGE);
+					suggestEvent.text = this.text;
+					dispatchEvent(suggestEvent);
+					_suggestList.close();
+				}
 				
 			} else if (event.charCode != 0) {
 				if (_timer.running) {
@@ -87,25 +95,33 @@ package com.xoomcode.components
 		
 		private function onTimerComplete(e:TimerEvent):void
 		{
-			if(this.text != null && this.text.length >= MIN_CHARS){
-				_searchService.suggest(this.text, onSuggestCallback);
+			if(this.text != null && this.text.length >= MIN_CHARS) {
+				params.value = this.text;
+				service.addEventListener(ResultEvent.RESULT, onSuggestResult);
+				service.send(params);
 			}
 		}
 		
-		
-		private function onSuggestCallback():void
+		private function onSuggestResult(event:ResultEvent):void
 		{
-			
+			var result:XMLList = XML(event.result).children();
+			if(result.length() > 0) {
+				_suggestList.dataProvider = result;
+				_suggestList.open();	
+			}
 		}
 		
-		private function onItemSelected():void
+		private function onSuggestListClose(e:SuggestInputEvent):void
 		{
-				
+			focusManager.setFocus(this);
 		}
 		
-		private function onSearchCallback():void
+		private function onSuggesListSearchChange(e:SuggestInputEvent):void
 		{
-			
+			var suggestEvent:SuggestInputEvent = new SuggestInputEvent(SuggestInputEvent.SEARCH_CHANGE);
+			suggestEvent.selectedItem = e.selectedItem;
+			dispatchEvent(suggestEvent);
 		}
+	
 	}
 }

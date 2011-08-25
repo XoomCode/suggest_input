@@ -19,25 +19,12 @@ package com.xoomcode.components
 		
 		public function suggest(text:String, callback:Function):void
 		{
+			var params:Object = new Object();
+			params.
+			
 			_callback = callback;
 			_httpService.resultFormat = HTTPService.RESULT_FORMAT_E4X;
-			_httpService.url = "/locations/instant/" + StringUtil.trim(text);
-			_httpService.send();
-		}
-		
-		public function search(type:String, id:Number, callback:Function):void
-		{
-			_callback = callback;
-			_httpService.resultFormat = HTTPService.RESULT_FORMAT_TEXT;
-			_httpService.url = "/locations/search/" + type + "/" + id.toString();
-			_httpService.send();
-		}
-		
-		public function lucky_search(address:String, callback:Function):void
-		{
-			_callback = callback;
-			_httpService.resultFormat = HTTPService.RESULT_FORMAT_TEXT;
-			_httpService.url = "/locations/lucky/" + address;
+			_httpService.url = "/transactions/suggest/" + StringUtil.trim(text);
 			_httpService.send();
 		}
 		

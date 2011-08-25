@@ -1,46 +1,60 @@
 package com.xoomcode.components
 {	
-	import com.xoomcode.events.SuggestListEvent;
+	import com.xoomcode.events.SuggestInputEvent;
 	
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
+	import flash.geom.Point;
 	import flash.ui.Keyboard;
 	
+	import mx.controls.Alert;
 	import mx.controls.List;
 	import mx.controls.TextInput;
 	import mx.events.FlexMouseEvent;
+	import mx.events.ListEvent;
 	import mx.managers.PopUpManager;
 	
-	[Event(name="itemSelected", type="SuggestListEvent")]
-
+	[Event(name="listClose", type="SuggestInputEvent")]
+	[Event(name="searchChange", type="SuggestInputEvent")]
+	
 	public class SuggestList extends List
 	{
 		private const SAFE_ROW_COUNT:int = 15;
+		
+		private var _position:Point;
+		private var _suggestInput:TextInput;
+		
 		public var isOpen:Boolean;
 		
-		public function SuggestList()
+		public function SuggestList(suggestInput:TextInput)
 		{
 			super();
+			
 			setStyle('alternatingItemColors', [0xFFFFFF,0xEEEEEE]);
 			alpha = 0.6;
 			isOpen = false;
+			doubleClickEnabled = true;
+			
+			_suggestInput = suggestInput;
+			_position = _suggestInput.localToGlobal(new Point(_suggestInput.x, _suggestInput.y + _suggestInput.height + 3));
+			this.width = _suggestInput.width;
 		}
 		
-		public function open(suggestInput:TextInput):void
+		public function open():void
 		{
 			if (this.isOpen)
 				return
 				
 			this.isOpen = true
 			this.addEventListener(KeyboardEvent.KEY_UP, onListKeyUp);
-			this.addEventListener(MouseEvent.MOUSE_UP, onListMouseUp);
-			this.addEventListener(FlexMouseEvent.MOUSE_DOWN_OUTSIDE, close);
+			this.addEventListener(ListEvent.ITEM_DOUBLE_CLICK, onItemDoubleClick);
+			this.addEventListener(FlexMouseEvent.MOUSE_DOWN_OUTSIDE, onListMouseDownOutside);
 			
-			PopUpManager.addPopUp(this, suggestInput);
+			PopUpManager.addPopUp(this, _suggestInput);
 			PopUpManager.centerPopUp(this);
-			this.move(this.x, suggestInput.y + suggestInput.height);
+			this.move(_position.x, _position.y);
 		}
 		
 		public function close():void
@@ -49,99 +63,47 @@ package com.xoomcode.components
 				PopUpManager.removePopUp(this);
 				
 				this.removeEventListener(KeyboardEvent.KEY_UP, onListKeyUp);
-				this.removeEventListener(MouseEvent.MOUSE_UP, onListMouseUp);
-				this.removeEventListener(FlexMouseEvent.MOUSE_DOWN_OUTSIDE, close);
+				this.removeEventListener(ListEvent.ITEM_DOUBLE_CLICK, onItemDoubleClick);
+				this.removeEventListener(FlexMouseEvent.MOUSE_DOWN_OUTSIDE, onListMouseDownOutside);
 				
 				this.isOpen = false;
+				
+				dispatchEvent(new SuggestInputEvent(SuggestInputEvent.LIST_CLOSE));
 			}
 		}
 		
 		private function onListKeyUp(event:KeyboardEvent):void
 		{	
 			if (event.keyCode == Keyboard.ENTER && this.selectedIndex != -1) {
-				dispatchItemSelectedEvent();
-				//focusManager.setFocus(
-				this.close();
-				
-			} else if (event.keyCode == Keyboard.UP && this.selectedIndex == 0 ||
+				dispatchChangeEvent();			
+			} else if ((event.keyCode == Keyboard.UP && this.selectedIndex == 0) ||
 				event.keyCode == Keyboard.ESCAPE) {
-				//focusManager.setFocus(
 				this.close();			
 			}
 			
 		}
 		
-		private function onListMouseUp(event:MouseEvent):void
+		private function onItemDoubleClick(event:ListEvent):void
 		{
-			if (this.selectedIndex != -1) {
-				dispatchItemSelectedEvent();
-				//focusManager.setFocus(
-				this.close();
-			}
+			if (this.selectedIndex != -1)
+				dispatchChangeEvent();
 		}
 		
-		private function dispatchItemSelectedEvent():void
+		private function onListMouseDownOutside(e:FlexMouseEvent):void
 		{
-			var suggestEvent:SuggestListEvent = new SuggestListEvent(SuggestListEvent.ITEM_SELECTED);
-			suggestEvent.selectedItem = this.selectedItem;
-			dispatchEvent(suggestEvent);
+			this.close();
 		}
 		
-		private function getMatchFieldLabel(matchField:String):String 
+		private function dispatchChangeEvent():void
 		{
-			if (matchField == "address") {
-				return "Dirección";
-			} else if (matchField == "description") {
-				return "Descripción";
-			} else {
-				return "Reporte";
-			}
-		}
-		
-		override protected function drawRowBackground(s:Sprite, rowIndex:int, y:Number, height:Number, color:uint, dataIndex:int):void
-		{
-			if (dataProvider != null) {
-				var item:Object;
-				
-				if (dataIndex < dataProvider.length) {
-					item = dataProvider[dataIndex];
-				}
-				
-				if (item) {
-					color = colorFunction(item, rowIndex, dataIndex, color);
-				}
-			}
+			_suggestInput.text = selectedItem.value.toString();
 			
-			super.drawRowBackground(s, rowIndex, y, height, color, dataIndex);
-		}
-		
-		override public function set dataProvider(value:Object):void
-		{
-			if (value) {
-				if (value is Array) {
-					var count:int = (value as Array).length;
-					if (count > SAFE_ROW_COUNT) {
-						count = SAFE_ROW_COUNT;
-					}
-					rowCount = count;
-				}
-			}
+			var event:SuggestInputEvent = new SuggestInputEvent(SuggestInputEvent.SEARCH_CHANGE, true);
+			event.selectedItem = this.selectedItem;
+			dispatchEvent(event);
 			
-			super.dataProvider = value;
+			this.close();
 		}
 		
-		/**
-		 * Colorize keywordList rows based on filter type
-		 */ 
-		private function colorFunction(item:Object, rowIndex:int, dataIndex:int, color:uint):uint
-		{
-			if (item.match_field == "description") {
-				return 0xE8FFE6;
-			} else if (item.match_field == "address") {
-				return 0xE6EEFF;
-			} else {
-				return color;
-			}
-		}
 	}
 }
