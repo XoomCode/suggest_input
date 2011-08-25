@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="SuggestInput" basedir="." default="build">
+  <property environment="env"/>
+  <property name="FLEX_HOME" value="${env.FLEX_HOME}"/>
+  <property name="src.dir" value="src"/>
+  <property name="release.dir" value="bin"/>
+  <property name="library.file" value="SuggestInput.swc"/>
+ 
+  <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" /> 
+ 
+  <target name="compile">
+    <compc output="${release.dir}/${library.file}">
+      <source-path path-element="${src.dir}" />
+      <include-sources dir="${src.dir}" includes="*"/>	
+    </compc>
+  </target>
+ 
+  <target name="clean">
+    <delete>
+      <fileset dir="${release.dir}" includes="${library.file}"/>
+    </delete>
+  </target>
+ 
+  <target name="build" depends="clean, compile" />
+ 
+</project>
