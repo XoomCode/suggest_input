@@ -26,6 +26,7 @@ package com.xoomcode.components
 		private var _suggestList:SuggestList;
 		private var _view:SuggestInput = null;
 		private var _timer:Timer;
+		private var _cancel:Boolean = false;
 		
 		public var service:HTTPService;
 		public var params:Object;
@@ -85,12 +86,11 @@ package com.xoomcode.components
 					focusManager.setFocus(_suggestList);
 				
 			} else if (event.keyCode == Keyboard.ESCAPE) {
-				_suggestList.close();				
+				_suggestList.close();
+				
 			} else if (event.keyCode == Keyboard.ENTER) {
 				if (this.text.length >= 1) {
-					var suggestEvent:SuggestInputEvent = new SuggestInputEvent(SuggestInputEvent.SEARCH_CHANGE);
-					suggestEvent.text = this.text;
-					dispatchEvent(suggestEvent);
+					dispatchSearchChangeEvent();
 					_suggestList.close();
 				}
 				
@@ -104,19 +104,25 @@ package com.xoomcode.components
 		
 		private function onTimerComplete(e:TimerEvent):void
 		{
-			if(this.text != null && this.text.length >= minChars) {
+			if(!_cancel && this.text != null && this.text.length >= minChars) {
 				params.value = this.text;
 				service.addEventListener(ResultEvent.RESULT, onSuggestResult);
 				service.send(params);
+			} else {
+				_suggestList.close();
 			}
+			
+			_cancel = false;
 		}
 		
 		private function onSuggestResult(event:ResultEvent):void
 		{
 			var result:XMLList = XML(event.result).children();
+			_suggestList.dataProvider = result;
 			if(result.length() > 0) {
-				_suggestList.dataProvider = result;
 				_suggestList.open();	
+			} else {
+				_suggestList.close();
 			}
 		}
 		
@@ -127,8 +133,18 @@ package com.xoomcode.components
 		
 		private function onSuggesListSearchChange(e:SuggestInputEvent):void
 		{
+			dispatchSearchChangeEvent(e);
+		}
+		
+		private function dispatchSearchChangeEvent(e:SuggestInputEvent = null):void
+		{
+			_cancel = true;
+			
 			var suggestEvent:SuggestInputEvent = new SuggestInputEvent(SuggestInputEvent.SEARCH_CHANGE);
-			suggestEvent.selectedItem = e.selectedItem;
+			if (e)
+				suggestEvent.selectedItem = e.selectedItem;
+			
+			suggestEvent.text = this.text;
 			dispatchEvent(suggestEvent);
 		}
 	
