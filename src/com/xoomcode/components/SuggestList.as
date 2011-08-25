@@ -21,8 +21,6 @@ package com.xoomcode.components
 	
 	public class SuggestList extends List
 	{
-		private const SAFE_ROW_COUNT:int = 15;
-		
 		private var _position:Point;
 		private var _suggestInput:TextInput;
 		
@@ -32,8 +30,6 @@ package com.xoomcode.components
 		{
 			super();
 			
-			setStyle('alternatingItemColors', [0xFFFFFF,0xEEEEEE]);
-			alpha = 0.6;
 			isOpen = false;
 			doubleClickEnabled = true;
 			

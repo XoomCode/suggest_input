@@ -23,15 +23,21 @@ package com.xoomcode.components
 	
 	public class SuggestInputCB extends TextInput
 	{
-		private const MIN_CHARS:int = 3;
-		private const SEARCH_DELAY:int = 500;
-		
 		private var _suggestList:SuggestList;
 		private var _view:SuggestInput = null;
 		private var _timer:Timer;
 		
 		public var service:HTTPService;
 		public var params:Object;
+		
+		[Bindable]
+		public var minChars:int = 3;		
+		[Bindable]
+		public var searchDelay:int = 500;
+		[Bindable]
+		public var listAlpha:Number = 0.6;
+		[Bindable]
+		public var listColors:Array = [0xFFFFFF, 0xEEEEEE];
 		
 		public function SuggestInputCB()
 		{
@@ -61,10 +67,13 @@ package com.xoomcode.components
 			
 			this.addEventListener(KeyboardEvent.KEY_UP, onTextKeyUp, false, -100, true);
 			
-			_timer = new Timer(SEARCH_DELAY, 1);
+			_timer = new Timer(searchDelay, 1);
 			_timer.addEventListener(TimerEvent.TIMER_COMPLETE, onTimerComplete);
 			
 			_suggestList = new SuggestList(this);
+			_suggestList.alpha = this.listAlpha;
+			_suggestList.setStyle('alternatingItemColors', this.listColors);
+			
 			_suggestList.addEventListener(SuggestInputEvent.LIST_CLOSE, onSuggestListClose);
 			_suggestList.addEventListener(SuggestInputEvent.SEARCH_CHANGE, onSuggesListSearchChange);
 		}
@@ -95,7 +104,7 @@ package com.xoomcode.components
 		
 		private function onTimerComplete(e:TimerEvent):void
 		{
-			if(this.text != null && this.text.length >= MIN_CHARS) {
+			if(this.text != null && this.text.length >= minChars) {
 				params.value = this.text;
 				service.addEventListener(ResultEvent.RESULT, onSuggestResult);
 				service.send(params);
