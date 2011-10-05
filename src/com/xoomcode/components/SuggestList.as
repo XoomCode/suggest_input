@@ -2,14 +2,10 @@ package com.xoomcode.components
 {	
 	import com.xoomcode.events.SuggestInputEvent;
 	
-	import flash.display.DisplayObject;
-	import flash.display.Sprite;
 	import flash.events.KeyboardEvent;
-	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.ui.Keyboard;
 	
-	import mx.controls.Alert;
 	import mx.controls.List;
 	import mx.controls.TextInput;
 	import mx.events.FlexMouseEvent;
@@ -39,9 +35,9 @@ package com.xoomcode.components
 		public function open():void
 		{
 			if (this.isOpen)
-				return
+				return;
 				
-			this.isOpen = true
+			this.isOpen = true;
 			this.addEventListener(KeyboardEvent.KEY_UP, onListKeyUp);
 			this.addEventListener(ListEvent.ITEM_DOUBLE_CLICK, onItemDoubleClick);
 			this.addEventListener(FlexMouseEvent.MOUSE_DOWN_OUTSIDE, onListMouseDownOutside);

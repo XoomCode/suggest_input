@@ -1,21 +1,14 @@
 package com.xoomcode.components
 {
-	import com.xoomcode.components.SuggestList;
 	import com.xoomcode.events.SuggestInputEvent;
 	
-	import flash.events.Event;
-	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
-	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
 	import flash.ui.Keyboard;
 	import flash.utils.Timer;
 	
-	import mx.controls.Alert;
 	import mx.controls.TextInput;
 	import mx.events.FlexEvent;
-	import mx.events.FlexMouseEvent;
-	import mx.managers.PopUpManager;
 	import mx.rpc.events.ResultEvent;
 	import mx.rpc.http.HTTPService;
 	

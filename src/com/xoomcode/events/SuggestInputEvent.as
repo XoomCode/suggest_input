@@ -1,7 +1,6 @@
 package com.xoomcode.events
 {
 	import flash.events.Event;
-	import flash.xml.XMLNode;
 	
 	public class SuggestInputEvent extends Event
 	{
